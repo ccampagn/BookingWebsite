@@ -16,5 +16,17 @@ namespace BookingWebsite.Test
             // Assert
             Assert.IsType<ViewResult>(result);
         }
+        [Fact]
+        public void App_Starts_And_Returns_View()
+        {
+            // Arrange
+            var controller = new BookingWebsite.Controllers.HomeController(null);
+
+            // Act
+            var result = controller.Index();
+
+            // Assert
+            Assert.NotNull(result);
+        }
     }
 }
