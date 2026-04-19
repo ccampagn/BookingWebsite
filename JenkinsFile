@@ -4,13 +4,7 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
-	stage('Clean Workspace') {
-    steps {
-        // This deletes all old test results so Jenkins can't find old data
-        sh 'rm -rf **/TestResults'
-        sh 'rm -rf **/coverage-results'
-    }
-}
+
         stage('Build') {
             steps {
                 sh 'dotnet restore'
@@ -19,15 +13,12 @@ pipeline {
         }
 	stage('Test') {
             steps {
-                sh 'dotnet test --no-build --no-restore \
-  --collect:"XPlat Code Coverage" \
-  --results-directory ./coverage-results \
-  -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura'
+                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
 
             }
 	   post {
                 always {
-                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'coverage-results/**/*.xml']])
+                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/*.xml']], sourceDirectories: [[path: 'BookingWebsite.Test/TestResults']])
                 }
             }
 
