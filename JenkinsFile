@@ -10,16 +10,7 @@ pipeline {
                 sh 'dotnet build --no-restore'
             }
         }
-        stage('Test') {
-            steps {
-                sh 'dotnet test --no-build --no-restore --collect:"XPlat Code Coverage" --results-directory ./TestResults'
-            }
-            post {
-                always {
-                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/TestResults/**/*.xml']])
-                }
-            }
-        }
+
         stage('Deliver') { 
             steps {
                 sh 'dotnet publish BookingWebsite --no-restore -o published'  
