@@ -1,3 +1,6 @@
+using BookingWebsite.Controllers;
+using Microsoft.AspNetCore.Mvc;
+
 namespace BookingWebsite.Test
 {
     public class BookingTest
@@ -5,8 +8,13 @@ namespace BookingWebsite.Test
         [Fact]
         public void Test1()
         {
-            Assert.Equal(5,
-            5);
+            var controller = new HomeController();
+
+            // Act
+            var result = controller.Index();
+
+            // Assert
+            Assert.IsType<ViewResult>(result);
         }
     }
 }
