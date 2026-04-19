@@ -10,6 +10,13 @@ pipeline {
                 sh 'dotnet build --no-restore'
             }
         }
+	stage('Test') {
+            steps {
+                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
+
+            }
+
+        }
 
         stage('Deliver') { 
             steps {
