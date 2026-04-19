@@ -12,11 +12,11 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
+                sh 'dotnet test --no-build --no-restore --collect:"XPlat Code Coverage" --results-directory ./TestResults'
             }
             post {
                 always {
-                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/*.xml']], sourceDirectories: [[path: 'BookingWebsite.Test/TestResults']])
+                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/TestResults/**/*.xml']])
                 }
             }
         }
