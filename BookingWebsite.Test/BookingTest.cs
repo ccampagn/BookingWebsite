@@ -20,7 +20,7 @@ namespace BookingWebsite.Test
         public void App_Starts_And_Returns_View()
         {
             // Arrange
-            var controller = new BookingWebsite.Controllers.HomeController(null);
+            var controller = new BookingWebsite.Controllers.HomeController(null); 
 
             // Act
             var result = controller.Index();
