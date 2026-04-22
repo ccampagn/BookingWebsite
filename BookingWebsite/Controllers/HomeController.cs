@@ -7,7 +7,8 @@ namespace BookingWebsite.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
+        private string _unusedField;
+        string password = "admin12345";
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
@@ -19,6 +20,7 @@ namespace BookingWebsite.Controllers
 
         public IActionResult Index()
         {
+
             return View();
         }
 
