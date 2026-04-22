@@ -11,6 +11,18 @@ pipeline {
                 sh 'dotnet build --no-restore'
             }
         }
+	stage('SonarQube Analysis') {
+            steps {
+                // The name here must match the name in Jenkins System Config
+                withSonarQubeEnv('SonarQube') {
+                    // This uses the tool name defined in Jenkins Tools
+                    def scannerHome = tool 'sonar-scanner'
+                    sh "${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=my-project-key \
+                    -Dsonar.sources=."
+                }
+            }
+        }
 	stage('Test') {
             steps {
                 sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
