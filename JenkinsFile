@@ -28,11 +28,14 @@ tools {
 
         }
 stage('SonarQube Analysis') {
+steps {
+
     def scannerHome = tool 'SonarScanner for .NET'
     withSonarQubeEnv() {
       bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"Scandotnet\""
       bat "dotnet build"
       bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll end"
+}
     }
   }
         stage('Deliver') { 
