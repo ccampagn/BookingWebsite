@@ -31,26 +31,24 @@ tools {
 stage('SonarQube Analysis') {
     steps {
         script {
-		sh 'curl -v http://YOUR_SONAR_IP:9000/api/server/version'
-            // Install scanner if missing
+            // Install the tool
             sh 'dotnet tool install --global dotnet-sonarscanner || true'
             
-            // Explicitly pull the token from Jenkins Credentials
+            // Note: We use single quotes (''') for the sh block to avoid 
+            // the "Insecure" Groovy interpolation warning.
             withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN')]) {
-                
                 withEnv(["PATH+SONAR=/${env.HOME}/.dotnet/tools"]) {
-                    // We still use withSonarQubeEnv to get the Server URL automatically
-                    withSonarQubeEnv('SonarQube') { // Match the name in your Jenkins settings
-    sh '''
-        dotnet sonarscanner begin /k:"ProjectKey" \
-        /d:sonar.host.url="${SONAR_HOST_URL}" \
-        /d:sonar.token="${TOKEN}"
-    '''
-    
-    sh 'dotnet build'
-    
-    sh 'dotnet sonarscanner end /d:sonar.token="${TOKEN}"'
-}
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            dotnet sonarscanner begin /k:"ProjectKey" \
+                            /d:sonar.host.url="${SONAR_HOST_URL}" \
+                            /d:sonar.token="${TOKEN}"
+                            
+                            dotnet build
+                            
+                            dotnet sonarscanner end /d:sonar.token="${TOKEN}"
+                        '''
+                    }
                 }
             }
         }
