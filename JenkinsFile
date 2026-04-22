@@ -13,13 +13,16 @@ pipeline {
         }
 	stage('SonarQube Analysis') {
             steps {
-                // The name here must match the name in Jenkins System Config
-                withSonarQubeEnv('SonarQube') {
-                    // This uses the tool name defined in Jenkins Tools
-                    def scannerHome = tool 'sonar-scanner'
-                    sh "${scannerHome}/bin/sonar-scanner \
-                    -Dsonar.projectKey=my-project-key \
-                    -Dsonar.sources=."
+                script {
+            // Wrapping in script {} allows variable definitions
+            def scannerHome = tool 'sonar-scanner'
+            
+            withSonarQubeEnv('SonarQube') {
+                sh "${scannerHome}/bin/sonar-scanner \
+                -Dsonar.projectKey=BookingWebsite \
+                -Dsonar.sources=."
+            }
+        }
                 }
             }
         }
