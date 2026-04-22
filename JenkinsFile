@@ -1,77 +1,75 @@
 pipeline {
     agent any
-tools {
+    tools {
         maven 'LocalMaven'
     }
-
     options {
         skipStagesAfterUnstable()
     }
     stages {
-
         stage('Build') {
             steps {
                 sh 'dotnet restore'
                 sh 'dotnet build --no-restore'
             }
         }
-	stage('Test') {
-            steps {
-                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
 
+        stage('Test') {
+            steps {
+                // Using the specific Cobertura collector for better compatibility
+                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
             }
-	   post {
+            post {
                 always {
+                    // Specific pattern to avoid the .sonarqube folder error
                     recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/TestResults/**/coverage.cobertura.xml']])
                 }
             }
-
         }
 
-stage('SonarQube Analysis') {
-    steps {
-        script {
-            // Install the tool
-            sh 'dotnet tool install --global dotnet-sonarscanner || true'
-            
-            // Note: We use single quotes (''') for the sh block to avoid 
-            // the "Insecure" Groovy interpolation warning.
-            withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN')]) {
-                withEnv(["PATH+SONAR=/${env.HOME}/.dotnet/tools"]) {
-                    withSonarQubeEnv('SonarQube') {
-                        sh '''
-                            dotnet sonarscanner begin /k:"ProjectKey" \
-                            /d:sonar.host.url="${SONAR_HOST_URL}" \
-                            /d:sonar.token="${TOKEN}"
-                            
-                            dotnet build
-                            
-                            dotnet sonarscanner end /d:sonar.token="${TOKEN}"
-                        '''
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    sh 'dotnet tool install --global dotnet-sonarscanner || true'
+                    
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN')]) {
+                        withEnv(["PATH+SONAR=/${env.HOME}/.dotnet/tools"]) {
+                            withSonarQubeEnv('SonarQube') {
+                                sh '''
+                                    dotnet sonarscanner begin /k:"ProjectKey" \
+                                    /d:sonar.host.url="${SONAR_HOST_URL}" \
+                                    /d:sonar.token="${TOKEN}" \
+                                    /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
+                                    
+                                    dotnet build
+                                    
+                                    dotnet sonarscanner end /d:sonar.token="${TOKEN}"
+                                '''
+                            }
+                        }
                     }
                 }
             }
         }
-    }
-}
 
-stage("Quality Gate") {
+        stage("Quality Gate") {
             steps {
-              timeout(time: 1, unit: 'HOURS') {
-                waitForQualityGate abortPipeline: true
-              }
+                // This will now work once you select the token in Manage Jenkins > System
+                timeout(time: 10, unit: 'MINUTES') { 
+                    waitForQualityGate abortPipeline: true
+                }
             }
-          }
+        }
+
         stage('Deliver') { 
             steps {
                 sh 'dotnet publish BookingWebsite --no-restore -o published'  
             }
             post {
                 success {
-                    archiveArtifacts 'published/*.*' 
+                    archiveArtifacts 'published/**/*' 
                 }
             }
         }
     }
 }
-
