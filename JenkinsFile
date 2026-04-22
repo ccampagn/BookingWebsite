@@ -4,37 +4,40 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
-
         stage('Build') {
             steps {
                 sh 'dotnet restore'
                 sh 'dotnet build --no-restore'
             }
         }
-	stage('SonarQube Analysis') {
+
+        stage('SonarQube Analysis') {
             steps {
                 script {
-            // Wrapping in script {} allows variable definitions
-            def scannerHome = tool 'sonar-scanner'
-            
-            withSonarQubeEnv('SonarQube') {
-                sh "${scannerHome}/bin/sonar-scanner \
-                -Dsonar.projectKey=BookingWebsite \
-                -Dsonar.sources=."
-            }
-        }
-        }
-	stage('Test') {
-            steps {
-                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
-
-            }
-	   post {
-                always {
-                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/*.xml']], sourceDirectories: [[path: 'BookingWebsite.Test/TestResults']])
+                    // This matches the tool name in Jenkins -> Global Tool Configuration
+                    def scannerHome = tool 'sonar-scanner'
+                    
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=BookingWebsite \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_AUTH_TOKEN}"
+                    }
                 }
             }
+        }
 
+        stage('Test') {
+            steps {
+                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
+            }
+            post {
+                always {
+                    // Ensure the 'recordCoverage' step plugin is installed in Jenkins
+                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/TestResults/**/coverage.cobertura.xml']], sourceDirectories: [[path: 'BookingWebsite.Test/']])
+                }
+            }
         }
 
         stage('Deliver') { 
@@ -43,7 +46,7 @@ pipeline {
             }
             post {
                 success {
-                    archiveArtifacts 'published/*.*' 
+                    archiveArtifacts artifacts: 'published/**/*', fingerprint: true
                 }
             }
         }
