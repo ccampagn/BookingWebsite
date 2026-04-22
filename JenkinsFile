@@ -27,17 +27,23 @@ tools {
             }
 
         }
-stage('SonarQube Analysis') {
-steps {
 
-    def scannerHome = tool 'SonarScanner for .NET'
-    withSonarQubeEnv() {
-      bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"Scandotnet\""
-      bat "dotnet build"
-      bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll end"
-}
+stage('SonarQube Analysis') {
+    steps {
+        script {
+            // Wrap variable assignments and logic in a script block
+            def scannerHome = tool 'SonarScanner for .NET'
+            
+            // Provide the name of your SonarQube server as configured in Jenkins
+            withSonarQubeEnv('SonarQube') { 
+                // Your analysis commands here, for example:
+                sh "${scannerHome}/dotnet-sonarscanner begin /k:\"ProjectKey\""
+                sh "dotnet build"
+                sh "${scannerHome}/dotnet-sonarscanner end"
+            }
+        }
     }
-  }
+}
         stage('Deliver') { 
             steps {
                 sh 'dotnet publish BookingWebsite --no-restore -o published'  
