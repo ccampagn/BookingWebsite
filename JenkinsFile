@@ -1,24 +1,50 @@
 pipeline {
-        agent none
-
+    agent any
 tools {
         maven 'LocalMaven'
     }
-        stages {
-          stage("build & SonarQube analysis") {
-            agent any
+
+    options {
+        skipStagesAfterUnstable()
+    }
+    stages {
+
+        stage('Build') {
             steps {
-              withSonarQubeEnv('SonarQube') {
-                sh 'mvn clean package sonar:sonar'
-              }
+                sh 'dotnet restore'
+                sh 'dotnet build --no-restore'
             }
-          }
-          stage("Quality Gate") {
-            steps {
-              timeout(time: 1, unit: 'HOURS') {
-                waitForQualityGate abortPipeline: true
-              }
-            }
-          }
         }
-      }
+	stage('Test') {
+            steps {
+                sh 'dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
+
+            }
+	   post {
+                always {
+                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/*.xml']], sourceDirectories: [[path: 'BookingWebsite.Test/TestResults']])
+                }
+            }
+
+        }
+stage('SonarQube Analysis') {
+    def scannerHome = tool 'SonarScanner for .NET'
+    withSonarQubeEnv() {
+      bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"Scandotnet\""
+      bat "dotnet build"
+      bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll end"
+    }
+  }
+        stage('Deliver') { 
+            steps {
+                sh 'dotnet publish BookingWebsite --no-restore -o published'  
+            }
+            post {
+                success {
+                    archiveArtifacts 'published/*.*' 
+                }
+            }
+        }
+    }
+}
+
