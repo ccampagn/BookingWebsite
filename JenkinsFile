@@ -31,17 +31,15 @@ tools {
 stage('SonarQube Analysis') {
     steps {
         script {
-            // 1. Ensure the scanner tool is installed in the current environment
-            // You can also do this once in your Dockerfile or agent setup
+            // Ensure the tool is available
             sh 'dotnet tool install --global dotnet-sonarscanner || true'
             
-            // 2. Add the global tools path to your PATH so Jenkins can find it
-            // Typically located at ~/.dotnet/tools
             withEnv(["PATH+SONAR=/${env.HOME}/.dotnet/tools"]) {
+                // withSonarQubeEnv injects SONAR_HOST_URL and credentials automatically
                 withSonarQubeEnv('SonarQube') {
-                    sh 'dotnet sonarscanner begin /k:"ProjectKey" /d:sonar.token="${SONAR_TOKEN}"'
+                    sh 'dotnet sonarscanner begin /k:"ProjectKey" /d:sonar.host.url="${SONAR_HOST_URL}" /d:sonar.login="${SONAR_AUTH_TOKEN}"'
                     sh 'dotnet build'
-                    sh 'dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"'
+                    sh 'dotnet sonarscanner end /d:sonar.login="${SONAR_AUTH_TOKEN}"'
                 }
             }
         }
