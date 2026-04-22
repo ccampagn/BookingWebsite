@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    tools {
-        maven 'LocalMaven'
-    }
     options {
         skipStagesAfterUnstable()
     }
@@ -13,7 +10,6 @@ pipeline {
                 sh 'dotnet build --no-restore'
             }
         }
-
         stage('Test') {
             steps {
                 // Using the specific Cobertura collector for better compatibility
@@ -54,7 +50,6 @@ pipeline {
 
         stage("Quality Gate") {
             steps {
-                // This will now work once you select the token in Manage Jenkins > System
                 timeout(time: 10, unit: 'MINUTES') { 
                     waitForQualityGate abortPipeline: true
                 }
