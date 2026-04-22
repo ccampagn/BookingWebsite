@@ -23,8 +23,6 @@ pipeline {
                 -Dsonar.sources=."
             }
         }
-                }
-            }
         }
 	stage('Test') {
             steps {
