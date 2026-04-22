@@ -27,7 +27,7 @@ namespace BookingWebsite.Test
 
             // Assert
             Assert.NotNull(result);
-            Assert.NotEqual(5, 6);
+            Assert.Equal(5, 6);
         }
     }
 }
