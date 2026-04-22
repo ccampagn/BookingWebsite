@@ -39,7 +39,7 @@ stage('SonarQube Analysis') {
                 
                 withEnv(["PATH+SONAR=/${env.HOME}/.dotnet/tools"]) {
                     // We still use withSonarQubeEnv to get the Server URL automatically
-                    withSonarQubeEnv('My SonarQube Server') {
+                    withSonarQubeEnv('SonarQube') {
                         
                         sh """
                             dotnet sonarscanner begin /k:"ProjectKey" \
