@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  dotnet:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    container_name: dotnet-8-agent
+    profiles:
+      - dotnet
+    networks:
+      - jenkins-net
+    ports:
+      - "5000:5000"
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: tail -f /dev/null
+
+networks:
+  jenkins-net:
+    driver: bridge
+    attachable: true
