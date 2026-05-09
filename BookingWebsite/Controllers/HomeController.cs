@@ -14,7 +14,7 @@ namespace BookingWebsite.Controllers
         }
 
         public HomeController()
-        {
+        { 
 
         }  
 
