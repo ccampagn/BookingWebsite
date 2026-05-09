@@ -16,7 +16,8 @@ namespace BookingWebsite.Controllers
         public HomeController()
         { 
              
-        }  
+
+        } 
 
         public IActionResult Index()
         {
