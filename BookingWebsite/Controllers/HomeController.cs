@@ -13,7 +13,7 @@ namespace BookingWebsite.Controllers
             _logger = logger;
         }
 
-        public HomeController() 
+        public HomeController()  
         { 
                    
         }   
